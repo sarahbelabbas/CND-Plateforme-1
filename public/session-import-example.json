@@ -1,0 +1,60 @@
+{
+  "sessions": [
+    {
+      "id": "S-EX-01",
+      "date": "2026-02-20",
+      "shots": [
+        {
+          "id": "T-EX-001",
+          "technique": "RX",
+          "source": "Tube RX standard",
+          "materialPiece": "Acier carbone",
+          "typeTir": "Simple paroi simple image",
+          "d": 3,
+          "dsf": 700,
+          "e": 24,
+          "kv": 200,
+          "ma": 4.5,
+          "time": 45,
+          "iqi": "EN IQI fil 10",
+          "sensibilite": "2%",
+          "images": "rx_001.dcm",
+          "indications": "Aucune"
+        }
+      ]
+    },
+    {
+      "id": "S-EX-02",
+      "date": "2026-02-21",
+      "shots": [
+        {
+          "id": "T-EX-002",
+          "technique": "Gamma",
+          "source": "Ir-192",
+          "materialPiece": "Acier carbone",
+          "gammaSource": "Ir-192",
+          "typeTir": "Simple paroi simple image",
+          "diametreTube": 88.9,
+          "diametreInterne": 66.9,
+          "longueurPiece": 10,
+          "nombreExpositions": 4,
+          "angleExpositions": 90,
+          "sourceAuContact": true,
+          "positionSource": "Intérieur",
+          "d": 2.5,
+          "dsf": 450,
+          "e": 10,
+          "activite": "8,23 Ci",
+          "gammaTime": "12 min 30 s",
+          "filmDetecteur": "Agfa D4 (Classe Spéciale)",
+          "densiteMode": "simple",
+          "densiteVoulue": 2,
+          "iqi": "EN IQI fil 10",
+          "sensibilite": "2%",
+          "images": "gamma_001.dcm",
+          "indications": "Zone à surveiller"
+        }
+      ]
+    }
+  ]
+}

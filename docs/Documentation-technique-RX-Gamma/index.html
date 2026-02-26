@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation technique RX/Gamma</title>
+    <style>
+      :root { color-scheme: light; }
+      body { margin: 0; font-family: Inter, Arial, sans-serif; background:#f3f6fb; color:#10233f; }
+      .wrap { max-width: 1100px; margin: 20px auto; padding: 0 16px 24px; }
+      .head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+      .head h1 { margin:0; font-size:24px; }
+      .panel { background:#fff; border:1px solid #d9e2ef; border-radius:14px; padding:14px; margin-bottom:14px; box-shadow:0 1px 2px rgba(16,35,63,.05); }
+      .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+      .badge { display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; background:#e8eef8; color:#244a7c; }
+      .tabs { display:flex; gap:8px; }
+      .tabs button { border:1px solid #c8d7ee; background:#fff; color:#173a66; border-radius:10px; padding:8px 12px; cursor:pointer; }
+      .tabs button.active { background:#1f5fbf; color:#fff; border-color:#1f5fbf; }
+      .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+      @media (min-width: 980px) { .grid { grid-template-columns: 2fr 1fr; } }
+      .meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; margin-top:10px; }
+      .meta .kpi { border:1px solid #dbe5f4; border-radius:10px; padding:8px; background:#f8fbff; }
+      .kpi small { color:#5f728d; display:block; margin-bottom:2px; }
+      .kpi strong { font-size:15px; }
+      .chartbox { border:1px solid #dbe5f4; border-radius:10px; background:#fff; padding:8px; }
+      svg { width:100%; height:auto; display:block; user-select:none; }
+      .muted { color:#5f728d; font-size:12px; }
+      select, input[type="number"] { border:1px solid #c8d7ee; border-radius:8px; padding:6px 8px; background:#fff; color:#173a66; }
+      button.apply { border:1px solid #1f5fbf; background:#1f5fbf; color:#fff; border-radius:8px; padding:6px 10px; cursor:pointer; }
+      button.apply:hover { filter:brightness(.95); }
+      button.secondary { border:1px solid #c8d7ee; background:#fff; color:#173a66; border-radius:8px; padding:6px 10px; cursor:pointer; }
+      button.secondary:hover { background:#f3f7fd; }
+      a { color:#1f5fbf; text-decoration:none; }
+      a:hover { text-decoration:underline; }
+      .hidden { display:none; }
+      .list { margin:0; padding-left:18px; }
+      .list li { margin:6px 0; }
+      .stack { display:grid; gap:12px; }
+      .calc { border:1px solid #dbe5f4; border-radius:10px; background:#f8fbff; padding:10px; display:grid; gap:8px; }
+      .calc h4 { margin:0; font-size:14px; }
+      .calc .row label { font-size:12px; color:#4f6482; }
+      .tables { display:grid; gap:12px; margin-top:2px; }
+      .tablebox { border:1px solid #dbe5f4; border-radius:10px; background:#fff; padding:10px; overflow:auto; }
+      .tablebox h4 { margin:0 0 8px; font-size:14px; }
+      table { width:100%; border-collapse:collapse; font-size:12px; }
+      th, td { border-bottom:1px solid #e8eef8; padding:6px 8px; text-align:left; white-space:nowrap; }
+      th { color:#44618a; font-weight:700; background:#f8fbff; }
+      .table-note { font-size:12px; color:#5f728d; margin:6px 0 0; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="head">
+        <h1>Documentation technique RX et Gamma</h1>
+        <span class="badge">Abaques numérisés interactifs</span>
+      </div>
+
+      <div class="panel row" style="justify-content:space-between;">
+        <div class="tabs">
+          <button id="tab-rx" class="active" type="button">Abaque RX</button>
+          <button id="tab-gamma" type="button">Abaque Ir-192</button>
+        </div>
+        <span class="badge">Abaques numérisés interactifs</span>
+      </div>
+
+      <section id="view-rx" class="grid">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; margin-bottom:6px;">
+            <strong>Courbes RX Q = f(épaisseur acier, kV)</strong>
+            <div class="row">
+              <label for="rx-kv">Courbe</label>
+              <select id="rx-kv"></select>
+              <label for="rx-e-input">Épaisseur (mm)</label>
+              <input id="rx-e-input" type="number" min="0" step="0.1" placeholder="ex: 18" />
+              <button id="rx-apply" class="apply" type="button">Appliquer</button>
+            </div>
+          </div>
+          <div class="chartbox">
+            <svg id="rx-svg" viewBox="0 0 760 360" aria-label="Abaque RX interactif"></svg>
+          </div>
+          <p class="muted">Survolez la courbe pour lire le facteur Q, cliquez pour figer/défiger le point.</p>
+          <div class="meta">
+            <div class="kpi"><small>Épaisseur</small><strong id="rx-e">-</strong></div>
+            <div class="kpi"><small>Facteur Q</small><strong id="rx-q">-</strong></div>
+            <div class="kpi"><small>Courbe kV</small><strong id="rx-kv-out">-</strong></div>
+          </div>
+
+          <div class="calc" style="margin-top:10px;">
+            <h4>Calculateur temps RX</h4>
+            <div class="row">
+              <label for="rx-ma">mA</label>
+              <input id="rx-ma" type="number" min="0.1" step="0.1" value="4.5" />
+              <label for="rx-film">Film</label>
+              <select id="rx-film"></select>
+              <label for="rx-density">Densité</label>
+              <input id="rx-density" type="number" min="1" step="0.1" value="2" />
+              <button id="rx-calc" class="apply" type="button">Calculer le temps</button>
+              <button id="rx-export" class="secondary" type="button">Exporter point</button>
+            </div>
+            <div class="meta">
+              <div class="kpi"><small>Q retenu</small><strong id="rx-q-used">-</strong></div>
+              <div class="kpi"><small>K film</small><strong id="rx-k-used">-</strong></div>
+              <div class="kpi"><small>N densité</small><strong id="rx-n-used">-</strong></div>
+              <div class="kpi"><small>Temps estimé</small><strong id="rx-time">-</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel stack">
+          <strong>Sources RX</strong>
+          <ul class="list">
+            <li><a href="./RX/abaque-rx-eresco-42mf4.json" target="_blank" rel="noreferrer">Abaque RX (JSON)</a></li>
+            <li><a href="./RX/coefficients-film-et-densite-rx.json" target="_blank" rel="noreferrer">Tables RX K/N (JSON)</a></li>
+            <li><a href="./formules-et-regles.md" target="_blank" rel="noreferrer">Formules et règles</a></li>
+          </ul>
+
+          <div class="tablebox">
+            <h4>Table films AGFA (K)</h4>
+            <table id="film-k-table"></table>
+          </div>
+
+          <div class="tablebox">
+            <h4>Table densité N (simple/double)</h4>
+            <table id="n-table"></table>
+          </div>
+        </div>
+
+        <div class="panel" style="grid-column:1/-1;">
+          <div class="tables">
+            <div class="tablebox">
+              <h4>Densités matériaux (attendus)</h4>
+              <table id="materials-table"></table>
+              <p class="table-note">Conversion vers acier appliquée : e_eq_acier = e_materiau * rho / 7.85</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-gamma" class="grid hidden">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; margin-bottom:6px;">
+            <strong>Courbe Ir-192 Q = f(épaisseur équivalente acier)</strong>
+            <div class="row">
+              <span class="badge">Interpolation linéaire</span>
+              <label for="g-e-input">Épaisseur (mm)</label>
+              <input id="g-e-input" type="number" min="0" step="0.1" placeholder="ex: 24" />
+              <button id="g-apply" class="apply" type="button">Appliquer</button>
+            </div>
+          </div>
+          <div class="chartbox">
+            <svg id="gamma-svg" viewBox="0 0 760 360" aria-label="Abaque Ir-192 interactif"></svg>
+          </div>
+          <p class="muted">Survolez la courbe pour lire le facteur Q, cliquez pour figer/défiger le point.</p>
+          <div class="meta">
+            <div class="kpi"><small>Épaisseur éq. acier</small><strong id="g-e">-</strong></div>
+            <div class="kpi"><small>Facteur Q Ir-192</small><strong id="g-q">-</strong></div>
+            <div class="kpi"><small>Unité</small><strong>Ci·h</strong></div>
+          </div>
+
+          <div class="calc" style="margin-top:10px;">
+            <h4>Calculateur temps Gamma (Ir-192)</h4>
+            <div class="row">
+              <label for="g-dsf">DSF (mm)</label>
+              <input id="g-dsf" type="number" min="1" step="1" value="450" />
+              <label for="g-activity">Activité (Ci)</label>
+              <input id="g-activity" type="number" min="0.01" step="0.01" value="8.23" />
+              <label for="g-film">Film</label>
+              <select id="g-film"></select>
+              <label for="g-density-mode">Mode densité</label>
+              <select id="g-density-mode">
+                <option value="simple">simple</option>
+                <option value="double">double</option>
+              </select>
+              <label for="g-density">Densité cible</label>
+              <input id="g-density" type="number" min="1" step="0.1" value="2" />
+              <button id="g-calc" class="apply" type="button">Calculer le temps</button>
+              <button id="g-export" class="secondary" type="button">Exporter point</button>
+            </div>
+            <div class="meta">
+              <div class="kpi"><small>K film</small><strong id="g-k-used">-</strong></div>
+              <div class="kpi"><small>N densité</small><strong id="g-n-used">-</strong></div>
+              <div class="kpi"><small>Temps estimé</small><strong id="g-time">-</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <strong>Sources Gamma</strong>
+          <ul class="list">
+            <li><a href="./Gamma/abaque-ir192.json" target="_blank" rel="noreferrer">Abaque Ir-192 (JSON)</a></li>
+            <li><a href="./Gamma/densites-materiaux.json" target="_blank" rel="noreferrer">Densités matériaux (JSON)</a></li>
+            <li><a href="./Gamma/coefficients-film-et-densite.json" target="_blank" rel="noreferrer">Facteurs K/N (JSON)</a></li>
+          </ul>
+          <div class="tablebox" style="margin-top:10px;">
+            <h4>Table densité N Ir-192 (simple/double)</h4>
+            <table id="g-n-table"></table>
+            <p id="g-n-auto-note" class="table-note">N auto calculé : -</p>
+          </div>
+          <div class="tablebox" style="margin-top:10px;">
+            <h4>Densités matériaux Ir (depuis acier)</h4>
+            <table id="g-materials-table"></table>
+            <p class="table-note">Conversion vers acier appliquée : e_eq_acier = e_materiau * rho / 7.85</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const P = { w: 760, h: 360, pad: 44 };
+
+      const tabRxBtn = document.getElementById('tab-rx');
+      const tabGammaBtn = document.getElementById('tab-gamma');
+      const viewRx = document.getElementById('view-rx');
+      const viewGamma = document.getElementById('view-gamma');
+
+      tabRxBtn.addEventListener('click', () => {
+        tabRxBtn.classList.add('active');
+        tabGammaBtn.classList.remove('active');
+        viewRx.classList.remove('hidden');
+        viewGamma.classList.add('hidden');
+      });
+      tabGammaBtn.addEventListener('click', () => {
+        tabGammaBtn.classList.add('active');
+        tabRxBtn.classList.remove('active');
+        viewGamma.classList.remove('hidden');
+        viewRx.classList.add('hidden');
+      });
+
+      function interp(points, x) {
+        if (!points.length || !Number.isFinite(x)) return null;
+        const arr = [...points].sort((a,b)=>a.epaisseur-b.epaisseur);
+        if (x <= arr[0].epaisseur) return arr[0].q;
+        if (x >= arr[arr.length-1].epaisseur) return arr[arr.length-1].q;
+        for (let i=0; i<arr.length-1; i++) {
+          const l = arr[i], r = arr[i+1];
+          if (x >= l.epaisseur && x <= r.epaisseur) {
+            const t = (x-l.epaisseur)/(r.epaisseur-l.epaisseur);
+            return l.q + t*(r.q-l.q);
+          }
+        }
+        return null;
+      }
+
+      function proj(ep, q, xMin, xMax, qMin, qMax) {
+        const x = P.pad + ((ep-xMin)/(xMax-xMin))*(P.w-2*P.pad);
+        const yN = (Math.log(q)-Math.log(qMin))/(Math.log(qMax)-Math.log(qMin));
+        const y = P.h - P.pad - yN*(P.h-2*P.pad);
+        return {x,y};
+      }
+
+      function linePath(points, xMin, xMax, qMin, qMax) {
+        return points.map((pt,i)=>{
+          const p = proj(pt.epaisseur, pt.q, xMin, xMax, qMin, qMax);
+          return `${i===0?'M':'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+        }).join(' ');
+      }
+
+      function makeSvg(tag, attrs={}) {
+        const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+        Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));
+        return n;
+      }
+
+      function interpDensityN(table, densite) {
+        const d = Number(densite);
+        if (!Array.isArray(table) || !table.length || !Number.isFinite(d)) return null;
+        const arr = [...table].sort((a,b)=>a.densite-b.densite);
+        if (d <= arr[0].densite) return arr[0].n;
+        if (d >= arr[arr.length-1].densite) return arr[arr.length-1].n;
+        for (let i=0;i<arr.length-1;i++) {
+          const l = arr[i], r = arr[i+1];
+          if (d >= l.densite && d <= r.densite) {
+            const t = (d-l.densite)/(r.densite-l.densite);
+            return l.n + t*(r.n-l.n);
+          }
+        }
+        return null;
+      }
+
+      function formatMinutesSeconds(totalSeconds) {
+        if (!Number.isFinite(totalSeconds) || totalSeconds < 0) return '-';
+        const s = Math.round(totalSeconds);
+        const min = Math.floor(s/60);
+        const sec = s % 60;
+        return `${min} min ${String(sec).padStart(2,'0')} s`;
+      }
+
+      function downloadJson(filename, payload) {
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      function fillFilmTable(filmK) {
+        const table = document.getElementById('film-k-table');
+        if (!table) return;
+        const rows = Object.entries(filmK || {});
+        table.innerHTML = `
+          <thead><tr><th>Film AGFA</th><th>K</th></tr></thead>
+          <tbody>
+            ${rows.map(([code,k])=>`<tr><td>AGFA ${code}</td><td>${k}</td></tr>`).join('')}
+          </tbody>
+        `;
+      }
+
+      function fillNTable(densityCorrectionN) {
+        const table = document.getElementById('n-table');
+        if (!table) return;
+        const simple = densityCorrectionN?.simple || [];
+        const dbl = densityCorrectionN?.double || [];
+        const maxRows = Math.max(simple.length, dbl.length);
+        const rows = Array.from({ length: maxRows }).map((_,i)=>({
+          s: simple[i] || null,
+          d: dbl[i] || null,
+        }));
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Densité simple</th><th>N simple</th>
+              <th>Densité double</th><th>N double</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(({s,d})=>`<tr>
+              <td>${s ? s.densite : '-'}</td><td>${s ? s.n : '-'}</td>
+              <td>${d ? d.densite : '-'}</td><td>${d ? d.n : '-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        `;
+      }
+
+      function fillGammaNTable(densityCorrectionN) {
+        const table = document.getElementById('g-n-table');
+        if (!table) return;
+        const simple = densityCorrectionN?.simple || [];
+        const dbl = densityCorrectionN?.double || [];
+        const maxRows = Math.max(simple.length, dbl.length);
+        const rows = Array.from({ length: maxRows }).map((_,i)=>({
+          s: simple[i] || null,
+          d: dbl[i] || null,
+        }));
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Densité simple</th><th>N simple</th>
+              <th>Densité double</th><th>N double</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(({s,d})=>`<tr>
+              <td>${s ? s.densite : '-'}</td><td>${s ? s.n : '-'}</td>
+              <td>${d ? d.densite : '-'}</td><td>${d ? d.n : '-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        `;
+      }
+
+      function fillMaterialsTable(materialsMap) {
+        const table = document.getElementById('materials-table');
+        if (!table) return;
+        const rows = Object.entries(materialsMap || {})
+          .sort((a,b)=>a[0].localeCompare(b[0], 'fr'))
+          .map(([name,rho]) => ({ name, rho: Number(rho), conv: Number(rho) / 7.85 }));
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Matériau</th>
+              <th>ρ réf. (g/cm3)</th>
+              <th>Coef conversion vers acier (rho/7.85)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r)=>`<tr>
+              <td>${r.name}</td>
+              <td>${Number.isFinite(r.rho) ? r.rho.toFixed(2) : '-'}</td>
+              <td>${Number.isFinite(r.conv) ? r.conv.toFixed(3) : '-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        `;
+      }
+
+      function fillGammaMaterialsTable(materialsMap) {
+        const table = document.getElementById('g-materials-table');
+        if (!table) return;
+        const rows = Object.entries(materialsMap || {})
+          .sort((a,b)=>a[0].localeCompare(b[0], 'fr'))
+          .map(([name,rho]) => ({ name, rho: Number(rho), conv: Number(rho) / 7.85 }));
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Matériau</th>
+              <th>ρ réf. (g/cm3)</th>
+              <th>Coef conversion vers acier (rho/7.85)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r)=>`<tr>
+              <td>${r.name}</td>
+              <td>${Number.isFinite(r.rho) ? r.rho.toFixed(2) : '-'}</td>
+              <td>${Number.isFinite(r.conv) ? r.conv.toFixed(3) : '-'}</td>
+            </tr>`).join('')}
+          </tbody>
+        `;
+      }
+
+      async function init() {
+        const [rxData, rxCoeffData, gData, coeffData, densityData] = await Promise.all([
+          fetch('./RX/abaque-rx-eresco-42mf4.json').then(r=>r.json()),
+          fetch('./RX/coefficients-film-et-densite-rx.json').then(r=>r.json()),
+          fetch('./Gamma/abaque-ir192.json').then(r=>r.json()),
+          fetch('./Gamma/coefficients-film-et-densite.json').then(r=>r.json()),
+          fetch('./Gamma/densites-materiaux.json').then(r=>r.json()),
+        ]);
+
+        fillFilmTable(rxCoeffData.filmKByAgfa || {});
+        fillNTable({ simple: rxCoeffData?.densityCorrectionN?.simple || [], double: [] });
+        fillGammaNTable(coeffData?.densityCorrectionN || {});
+        fillMaterialsTable(densityData.materials || {});
+        fillGammaMaterialsTable(densityData.materials || {});
+
+        initRx(rxData, rxCoeffData);
+        initGamma(gData, coeffData);
+      }
+
+      function initRx(rxData, rxCoeffData) {
+        const curvesByKv = rxData.curvesByKv || {};
+        const rxFilmK = rxCoeffData?.filmKByAgfa || {};
+        const rxNTable = rxCoeffData?.densityCorrectionN?.simple || [];
+        const kvs = Object.keys(curvesByKv).map(Number).sort((a,b)=>a-b);
+        const kvSel = document.getElementById('rx-kv');
+        kvs.forEach(kv => {
+          const opt = document.createElement('option');
+          opt.value = String(kv); opt.textContent = `${kv} kV`;
+          kvSel.appendChild(opt);
+        });
+        kvSel.value = String(kvs[kvs.length-1] || 200);
+
+        const svg = document.getElementById('rx-svg');
+        const eInput = document.getElementById('rx-e-input');
+        const applyBtn = document.getElementById('rx-apply');
+        const maInput = document.getElementById('rx-ma');
+        const filmSel = document.getElementById('rx-film');
+        const densityInput = document.getElementById('rx-density');
+        const calcBtn = document.getElementById('rx-calc');
+        const exportBtn = document.getElementById('rx-export');
+        let pinned = null;
+        let hover = null;
+
+        const allPts = kvs.flatMap(kv => curvesByKv[String(kv)] || []);
+        const xMin = Math.min(...allPts.map(p=>p.epaisseur));
+        const xMax = Math.max(...allPts.map(p=>p.epaisseur));
+        const qMin = Math.min(...allPts.map(p=>p.q));
+        const qMax = Math.max(...allPts.map(p=>p.q));
+
+        Object.keys(rxFilmK).forEach(code => {
+          const opt = document.createElement('option');
+          opt.value = code;
+          opt.textContent = `AGFA ${code}`;
+          filmSel?.appendChild(opt);
+        });
+        if (filmSel && !filmSel.value) {
+          filmSel.value = Object.keys(rxFilmK)[0] || '';
+        }
+
+        function draw() {
+          svg.innerHTML = '';
+          svg.appendChild(makeSvg('rect',{x:0,y:0,width:P.w,height:P.h,fill:'#fff'}));
+          svg.appendChild(makeSvg('line',{x1:P.pad,y1:P.h-P.pad,x2:P.w-P.pad,y2:P.h-P.pad,stroke:'#9db0c9'}));
+          svg.appendChild(makeSvg('line',{x1:P.pad,y1:P.pad,x2:P.pad,y2:P.h-P.pad,stroke:'#9db0c9'}));
+
+          kvs.forEach(kv => {
+            const pts = curvesByKv[String(kv)] || [];
+            const active = Number(kvSel.value) === kv;
+            svg.appendChild(makeSvg('path',{
+              d: linePath(pts, xMin, xMax, qMin, qMax),
+              fill:'none',
+              stroke: active ? '#1d4ed8' : '#94a3b8',
+              'stroke-width': active ? 2.8 : 1.3,
+              opacity: active ? 1 : .7,
+            }));
+          });
+
+          const pt = pinned || hover;
+          if (pt) {
+            const p = proj(pt.e, pt.q, xMin, xMax, qMin, qMax);
+            svg.appendChild(makeSvg('line',{x1:p.x,y1:P.pad,x2:p.x,y2:P.h-P.pad,stroke:'#334155','stroke-dasharray':'4 3'}));
+            svg.appendChild(makeSvg('circle',{cx:p.x,cy:p.y,r:4,fill:'#0f172a'}));
+          }
+
+          const hit = makeSvg('rect',{x:P.pad,y:P.pad,width:P.w-2*P.pad,height:P.h-2*P.pad,fill:'transparent',style:'cursor:crosshair'});
+          hit.addEventListener('mousemove', onMove);
+          hit.addEventListener('mouseleave', onLeave);
+          hit.addEventListener('click', onClick);
+          svg.appendChild(hit);
+
+          const outE = document.getElementById('rx-e');
+          const outQ = document.getElementById('rx-q');
+          const outKv = document.getElementById('rx-kv-out');
+          const shown = pinned || hover;
+          outE.textContent = shown ? `${shown.e.toFixed(2)} mm` : '-';
+          outQ.textContent = shown ? shown.q.toFixed(2) : '-';
+          outKv.textContent = `${kvSel.value} kV`;
+        }
+
+        function eventToE(event){
+          const b = svg.getBoundingClientRect();
+          const sx = ((event.clientX-b.left)/b.width)*P.w;
+          const x = Math.max(P.pad, Math.min(P.w-P.pad, sx));
+          const t = (x-P.pad)/(P.w-2*P.pad);
+          return xMin + t*(xMax-xMin);
+        }
+
+        function onMove(event){
+          if (pinned) return;
+          const e = eventToE(event);
+          const pts = curvesByKv[String(kvSel.value)] || [];
+          const q = interp(pts,e);
+          if (q == null) { hover = null; draw(); return; }
+          hover = {e,q};
+          draw();
+        }
+        function onLeave(){ if (!pinned) { hover = null; draw(); } }
+        function onClick(event){
+          if (pinned) { pinned = null; draw(); return; }
+          const e = eventToE(event);
+          const pts = curvesByKv[String(kvSel.value)] || [];
+          const q = interp(pts,e);
+          if (q == null) return;
+          pinned = {e,q};
+          hover = {e,q};
+          if (eInput) eInput.value = e.toFixed(2);
+          draw();
+        }
+
+        function applyThickness() {
+          const e = Number(eInput?.value);
+          if (!Number.isFinite(e)) return;
+          const pts = curvesByKv[String(kvSel.value)] || [];
+          const q = interp(pts, e);
+          if (q == null) return;
+          pinned = { e, q };
+          hover = { e, q };
+          draw();
+          computeRxTime();
+        }
+
+        function computeRxTime() {
+          const shown = pinned || hover;
+          const q = shown?.q;
+          const ma = Number(maInput?.value);
+          const dens = Number(densityInput?.value);
+          const filmCode = filmSel?.value || '';
+          const k = Number(rxFilmK?.[filmCode]);
+          const n = interpDensityN(rxNTable, dens);
+          const qOut = document.getElementById('rx-q-used');
+          const kOut = document.getElementById('rx-k-used');
+          const nOut = document.getElementById('rx-n-used');
+          const tOut = document.getElementById('rx-time');
+          if (!Number.isFinite(q) || !Number.isFinite(ma) || ma <= 0 || !Number.isFinite(k) || !Number.isFinite(n)) {
+            qOut.textContent = '-';
+            kOut.textContent = Number.isFinite(k) ? k.toFixed(2) : '-';
+            nOut.textContent = Number.isFinite(n) ? n.toFixed(2) : '-';
+            tOut.textContent = '-';
+            return;
+          }
+          const tMinutes = (q * k * n) / ma;
+          const tSeconds = tMinutes * 60;
+          qOut.textContent = q.toFixed(2);
+          kOut.textContent = k.toFixed(2);
+          nOut.textContent = n.toFixed(2);
+          tOut.textContent = `${tMinutes.toFixed(3)} min (${formatMinutesSeconds(tSeconds)})`;
+          return { tMinutes, tSeconds, k, n };
+        }
+
+        function exportRxPoint() {
+          const shown = pinned || hover;
+          if (!shown) return;
+          const ma = Number(maInput?.value);
+          const dens = Number(densityInput?.value);
+          const filmCode = filmSel?.value || '';
+          const computed = computeRxTime();
+          const payload = {
+            schema: 'rx-frozen-point',
+            exportedAt: new Date().toISOString(),
+            source: 'ERESCO 42 MF4 - 200kV - 4.5mA',
+            kv: Number(kvSel.value),
+            epaisseurMm: Number(shown.e.toFixed(4)),
+            qFactor: Number(shown.q.toFixed(6)),
+            film: filmCode ? `AGFA ${filmCode}` : null,
+            ma: Number.isFinite(ma) ? ma : null,
+            targetDensity: Number.isFinite(dens) ? dens : null,
+            filmK: computed && Number.isFinite(computed.k) ? Number(computed.k.toFixed(6)) : null,
+            densityN: computed && Number.isFinite(computed.n) ? Number(computed.n.toFixed(6)) : null,
+            estimatedTimeMinutes: computed && Number.isFinite(computed.tMinutes) ? Number(computed.tMinutes.toFixed(6)) : null,
+            estimatedTimeSeconds: computed && Number.isFinite(computed.tSeconds) ? Number(computed.tSeconds.toFixed(6)) : null,
+            formula: 'Tps(min) = (Q * K * N) / mA ; Q lu a 700 mm'
+          };
+          downloadJson(`rx-point-kv-${kvSel.value}-${new Date().toISOString().slice(0,10)}.json`, payload);
+        }
+
+        kvSel.addEventListener('change', ()=>{ pinned = null; hover = null; draw(); });
+        applyBtn?.addEventListener('click', applyThickness);
+        calcBtn?.addEventListener('click', computeRxTime);
+        exportBtn?.addEventListener('click', exportRxPoint);
+        maInput?.addEventListener('change', computeRxTime);
+        filmSel?.addEventListener('change', computeRxTime);
+        densityInput?.addEventListener('change', computeRxTime);
+        eInput?.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            applyThickness();
+          }
+        });
+        draw();
+      }
+
+      function initGamma(gData, coeffData) {
+        const pts = gData.points || [];
+        const gammaFilmK = coeffData?.filmKByAgfa || {};
+        const svg = document.getElementById('gamma-svg');
+        const eInput = document.getElementById('g-e-input');
+        const applyBtn = document.getElementById('g-apply');
+        const dsfInput = document.getElementById('g-dsf');
+        const activityInput = document.getElementById('g-activity');
+        const filmSel = document.getElementById('g-film');
+        const modeSel = document.getElementById('g-density-mode');
+        const densityInput = document.getElementById('g-density');
+        const calcBtn = document.getElementById('g-calc');
+        const exportBtn = document.getElementById('g-export');
+        let pinned = null;
+        let hover = null;
+
+        Object.keys(gammaFilmK).forEach(code => {
+          const opt = document.createElement('option');
+          opt.value = code;
+          opt.textContent = `AGFA ${code}`;
+          filmSel?.appendChild(opt);
+        });
+        if (filmSel && !filmSel.value) {
+          filmSel.value = Object.keys(gammaFilmK)[0] || '';
+        }
+
+        const xMin = Math.min(...pts.map(p=>p.epaisseur));
+        const xMax = Math.max(...pts.map(p=>p.epaisseur));
+        const qMin = Math.min(...pts.map(p=>p.q));
+        const qMax = Math.max(...pts.map(p=>p.q));
+
+        function draw(){
+          svg.innerHTML = '';
+          svg.appendChild(makeSvg('rect',{x:0,y:0,width:P.w,height:P.h,fill:'#fff'}));
+          svg.appendChild(makeSvg('line',{x1:P.pad,y1:P.h-P.pad,x2:P.w-P.pad,y2:P.h-P.pad,stroke:'#9db0c9'}));
+          svg.appendChild(makeSvg('line',{x1:P.pad,y1:P.pad,x2:P.pad,y2:P.h-P.pad,stroke:'#9db0c9'}));
+          svg.appendChild(makeSvg('path',{d:linePath(pts,xMin,xMax,qMin,qMax),fill:'none',stroke:'#1d4ed8','stroke-width':2.8}));
+
+          const pt = pinned || hover;
+          if (pt) {
+            const p = proj(pt.e, pt.q, xMin, xMax, qMin, qMax);
+            svg.appendChild(makeSvg('line',{x1:p.x,y1:P.pad,x2:p.x,y2:P.h-P.pad,stroke:'#334155','stroke-dasharray':'4 3'}));
+            svg.appendChild(makeSvg('circle',{cx:p.x,cy:p.y,r:4,fill:'#0f172a'}));
+          }
+
+          const hit = makeSvg('rect',{x:P.pad,y:P.pad,width:P.w-2*P.pad,height:P.h-2*P.pad,fill:'transparent',style:'cursor:crosshair'});
+          hit.addEventListener('mousemove', onMove);
+          hit.addEventListener('mouseleave', onLeave);
+          hit.addEventListener('click', onClick);
+          svg.appendChild(hit);
+
+          const shown = pinned || hover;
+          document.getElementById('g-e').textContent = shown ? `${shown.e.toFixed(2)} mm` : '-';
+          document.getElementById('g-q').textContent = shown ? shown.q.toFixed(2) : '-';
+        }
+
+        function eventToE(event){
+          const b = svg.getBoundingClientRect();
+          const sx = ((event.clientX-b.left)/b.width)*P.w;
+          const x = Math.max(P.pad, Math.min(P.w-P.pad, sx));
+          const t = (x-P.pad)/(P.w-2*P.pad);
+          return xMin + t*(xMax-xMin);
+        }
+
+        function onMove(event){
+          if (pinned) return;
+          const e = eventToE(event);
+          const q = interp(pts,e);
+          if (q == null) { hover = null; draw(); return; }
+          hover = {e,q};
+          draw();
+        }
+        function onLeave(){ if (!pinned) { hover = null; draw(); } }
+        function onClick(event){
+          if (pinned) { pinned = null; draw(); return; }
+          const e = eventToE(event);
+          const q = interp(pts,e);
+          if (q == null) return;
+          pinned = {e,q};
+          hover = {e,q};
+          if (eInput) eInput.value = e.toFixed(2);
+          draw();
+        }
+
+        function applyThickness() {
+          const e = Number(eInput?.value);
+          if (!Number.isFinite(e)) return;
+          const q = interp(pts, e);
+          if (q == null) return;
+          pinned = { e, q };
+          hover = { e, q };
+          draw();
+          computeGammaTime();
+        }
+
+        function computeGammaTime() {
+          const shown = pinned || hover;
+          const q = shown?.q;
+          const dsf = Number(dsfInput?.value);
+          const activity = Number(activityInput?.value);
+          const mode = modeSel?.value === 'double' ? 'double' : 'simple';
+          const dens = Number(densityInput?.value);
+          const filmCode = filmSel?.value || '';
+          const k = Number(gammaFilmK?.[filmCode]);
+          const n = interpDensityN(coeffData?.densityCorrectionN?.[mode] || [], dens);
+
+          const kOut = document.getElementById('g-k-used');
+          const nOut = document.getElementById('g-n-used');
+          const tOut = document.getElementById('g-time');
+          const nAutoNote = document.getElementById('g-n-auto-note');
+
+          if (!Number.isFinite(q) || !Number.isFinite(dsf) || dsf <= 0 || !Number.isFinite(activity) || activity <= 0 || !Number.isFinite(k) || !Number.isFinite(n)) {
+            kOut.textContent = Number.isFinite(k) ? k.toFixed(2) : '-';
+            nOut.textContent = Number.isFinite(n) ? n.toFixed(2) : '-';
+            if (nAutoNote) {
+              nAutoNote.textContent = Number.isFinite(n)
+                ? `N auto calculé (${mode}, densité ${Number.isFinite(dens) ? dens.toFixed(2) : '-'}) : ${n.toFixed(2)}`
+                : `N auto calculé (${mode}, densité ${Number.isFinite(dens) ? dens.toFixed(2) : '-'}) : -`;
+            }
+            tOut.textContent = '-';
+            return;
+          }
+
+          const dMeters = dsf / 1000;
+          const tHours = (q * dMeters * dMeters * k * n) / activity;
+          kOut.textContent = k.toFixed(2);
+          nOut.textContent = n.toFixed(2);
+          if (nAutoNote) {
+            nAutoNote.textContent = `N auto calculé (${mode}, densité ${dens.toFixed(2)}) : ${n.toFixed(2)}`;
+          }
+          tOut.textContent = `${tHours.toFixed(3)} h (${formatMinutesSeconds(tHours * 3600)})`;
+          return { tHours, k, n };
+        }
+
+        function exportGammaPoint() {
+          const shown = pinned || hover;
+          if (!shown) return;
+
+          const dsf = Number(dsfInput?.value);
+          const activity = Number(activityInput?.value);
+          const mode = modeSel?.value === 'double' ? 'double' : 'simple';
+          const dens = Number(densityInput?.value);
+          const filmLabel = filmSel?.value || '';
+          const computed = computeGammaTime();
+
+          const payload = {
+            schema: 'gamma-ir192-frozen-point',
+            exportedAt: new Date().toISOString(),
+            source: 'Ir-192',
+            film: filmLabel ? `AGFA ${filmLabel}` : null,
+            epaisseurEquivalentAcierMm: Number(shown.e.toFixed(4)),
+            qFactor: Number(shown.q.toFixed(6)),
+            dsfMm: Number.isFinite(dsf) ? dsf : null,
+            activityCi: Number.isFinite(activity) ? activity : null,
+            densityMode: mode,
+            targetDensity: Number.isFinite(dens) ? dens : null,
+            filmK: computed && Number.isFinite(computed.k) ? Number(computed.k.toFixed(6)) : null,
+            densityN: computed && Number.isFinite(computed.n) ? Number(computed.n.toFixed(6)) : null,
+            estimatedTimeHours: computed && Number.isFinite(computed.tHours) ? Number(computed.tHours.toFixed(6)) : null,
+            formula: 't = (Q * D^2 * K * N) / A, avec D = DSF/1000'
+          };
+
+          downloadJson(`gamma-ir192-point-${new Date().toISOString().slice(0,10)}.json`, payload);
+        }
+
+        applyBtn?.addEventListener('click', applyThickness);
+        calcBtn?.addEventListener('click', computeGammaTime);
+        exportBtn?.addEventListener('click', exportGammaPoint);
+        dsfInput?.addEventListener('change', computeGammaTime);
+        activityInput?.addEventListener('change', computeGammaTime);
+        filmSel?.addEventListener('change', computeGammaTime);
+        modeSel?.addEventListener('change', computeGammaTime);
+        densityInput?.addEventListener('change', computeGammaTime);
+        eInput?.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            applyThickness();
+          }
+        });
+
+        draw();
+      }
+
+      init().catch((error) => {
+        document.body.innerHTML = `<div style="padding:20px;font-family:Arial,sans-serif;">Erreur chargement visualiseur: ${String(error)}</div>`;
+      });
+    </script>
+  </body>
+</html>

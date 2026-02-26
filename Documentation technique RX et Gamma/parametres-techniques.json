@@ -1,0 +1,49 @@
+{
+  "limits": {
+    "fgMaxLimitMm": 0.3,
+    "rxAbaqueReferenceDsfMm": 700
+  },
+  "sourceOptionsByTechnique": {
+    "RX": ["Tube RX microfoyer", "Tube RX standard", "Générateur numérique"],
+    "Gamma": ["Ir-192", "Se-75", "Co-60"]
+  },
+  "shotTypesByTechnique": {
+    "RX": {
+      "default": [
+        "Simple paroi simple image",
+        "Simple paroi double image",
+        "Double paroi simple image"
+      ],
+      "bySource": {
+        "Tube RX microfoyer": ["Microfoyer HD", "Simple paroi simple image"],
+        "Tube RX standard": ["Simple paroi simple image", "Double paroi simple image"],
+        "Générateur numérique": ["Numérique direct", "Simple paroi simple image"]
+      }
+    },
+    "Gamma": {
+      "default": [
+        "Simple paroi simple image",
+        "Simple paroi double image",
+        "Double paroi simple image",
+        "Double paroi double image",
+        "Plan sur plan",
+        "Panoramique",
+        "Panoramique circonférentielle",
+        "Tangentiel",
+        "Elliptique",
+        "Oblique",
+        "Axial",
+        "Profil",
+        "Multi-expositions",
+        "Contrôle contact",
+        "Forte épaisseur",
+        "Faible épaisseur"
+      ],
+      "bySource": {
+        "Ir-192": [],
+        "Se-75": [],
+        "Co-60": []
+      }
+    }
+  }
+}

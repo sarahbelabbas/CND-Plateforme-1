@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "name": "Abaque Ir-192",
+    "description": "Facteur Q en fonction de l'épaisseur équivalente acier",
+    "units": {
+      "epaisseur": "mm équivalent acier",
+      "q": "Ci·h"
+    }
+  },
+  "points": [
+    { "epaisseur": 0, "q": 3.3 },
+    { "epaisseur": 5, "q": 4.2 },
+    { "epaisseur": 10, "q": 5.5 },
+    { "epaisseur": 15, "q": 6.9 },
+    { "epaisseur": 20, "q": 8.5 },
+    { "epaisseur": 25, "q": 10.5 },
+    { "epaisseur": 30, "q": 13 },
+    { "epaisseur": 35, "q": 16.5 },
+    { "epaisseur": 40, "q": 22 },
+    { "epaisseur": 45, "q": 29 },
+    { "epaisseur": 50, "q": 38 },
+    { "epaisseur": 55, "q": 50 },
+    { "epaisseur": 60, "q": 66 },
+    { "epaisseur": 65, "q": 87 },
+    { "epaisseur": 70, "q": 112 },
+    { "epaisseur": 75, "q": 145 },
+    { "epaisseur": 80, "q": 188 },
+    { "epaisseur": 85, "q": 245 },
+    { "epaisseur": 90, "q": 318 },
+    { "epaisseur": 95, "q": 410 },
+    { "epaisseur": 100, "q": 520 }
+  ],
+  "formulas": {
+    "interpolation": "Interpolation linéaire entre points successifs",
+    "steelEquivalent": "e_acier = e_materiau * rho_materiau / 7.85",
+    "timeHours": "t = (Q * D^2 * K * N) / A",
+    "distance": "D en mètres (D = DSF_mm / 1000)"
+  },
+  "defaultSourceByThickness": [
+    { "condition": "e >= 45", "source": "Co-60" },
+    { "condition": "e <= 12", "source": "Se-75" },
+    { "condition": "sinon", "source": "Ir-192" }
+  ]
+}

@@ -68,3 +68,18 @@ This section has moved here: [https://vitejs.dev/guide/build.html](https://vitej
 ### Troubleshooting
 
 This section has moved here: [https://vitejs.dev/guide/troubleshooting.html](https://vitejs.dev/guide/troubleshooting.html)
+
+## Référentiel densités gamma (temps de pose)
+
+Le calcul automatique du temps de pose gamma (Ir-192) adapte l&apos;épaisseur au matériau via la relation :
+
+- e acier = e matériau × ρ matériau / 7,85
+- t = Q × D² × K × N / A
+
+Le tableau complet des densités de référence et des valeurs de conversion utilisées est disponible dans l&apos;écran **Documentation & checklist** de l&apos;application.
+
+Valeurs de conversion examen appliquées :
+
+- Aciers : 7,85
+- Aluminium : 2,7
+- Titane : 4,5

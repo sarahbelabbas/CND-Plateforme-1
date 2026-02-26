@@ -1,0 +1,106 @@
+{
+  "metadata": {
+    "name": "Abaque RX ERESCO 42 MF4",
+    "description": "Facteur Q (mA·min) en fonction de l'épaisseur équivalente acier et de la tension kV",
+    "referenceDSFmm": 700,
+    "units": {
+      "epaisseur": "mm",
+      "q": "mA·min",
+      "kv": "kV",
+      "ma": "mA",
+      "time": "s"
+    }
+  },
+  "curvesByKv": {
+    "80": [
+      { "epaisseur": 0, "q": 6 },
+      { "epaisseur": 5, "q": 8 },
+      { "epaisseur": 10, "q": 10.5 },
+      { "epaisseur": 15, "q": 14 },
+      { "epaisseur": 20, "q": 18.5 },
+      { "epaisseur": 25, "q": 24 },
+      { "epaisseur": 30, "q": 31 },
+      { "epaisseur": 35, "q": 39 },
+      { "epaisseur": 40, "q": 48 },
+      { "epaisseur": 45, "q": 50 }
+    ],
+    "100": [
+      { "epaisseur": 0, "q": 4.8 },
+      { "epaisseur": 5, "q": 6.2 },
+      { "epaisseur": 10, "q": 8.2 },
+      { "epaisseur": 15, "q": 10.9 },
+      { "epaisseur": 20, "q": 14.5 },
+      { "epaisseur": 25, "q": 19 },
+      { "epaisseur": 30, "q": 25 },
+      { "epaisseur": 35, "q": 32 },
+      { "epaisseur": 40, "q": 40 },
+      { "epaisseur": 45, "q": 49 }
+    ],
+    "120": [
+      { "epaisseur": 0, "q": 3.9 },
+      { "epaisseur": 5, "q": 5 },
+      { "epaisseur": 10, "q": 6.6 },
+      { "epaisseur": 15, "q": 8.8 },
+      { "epaisseur": 20, "q": 11.7 },
+      { "epaisseur": 25, "q": 15.5 },
+      { "epaisseur": 30, "q": 20.4 },
+      { "epaisseur": 35, "q": 26.8 },
+      { "epaisseur": 40, "q": 35 },
+      { "epaisseur": 45, "q": 45 }
+    ],
+    "140": [
+      { "epaisseur": 0, "q": 3.2 },
+      { "epaisseur": 5, "q": 4.1 },
+      { "epaisseur": 10, "q": 5.4 },
+      { "epaisseur": 15, "q": 7.2 },
+      { "epaisseur": 20, "q": 9.6 },
+      { "epaisseur": 25, "q": 12.8 },
+      { "epaisseur": 30, "q": 16.9 },
+      { "epaisseur": 35, "q": 22.4 },
+      { "epaisseur": 40, "q": 29.7 },
+      { "epaisseur": 45, "q": 39 }
+    ],
+    "160": [
+      { "epaisseur": 0, "q": 2.7 },
+      { "epaisseur": 5, "q": 3.4 },
+      { "epaisseur": 10, "q": 4.5 },
+      { "epaisseur": 15, "q": 6 },
+      { "epaisseur": 20, "q": 8 },
+      { "epaisseur": 25, "q": 10.6 },
+      { "epaisseur": 30, "q": 14.1 },
+      { "epaisseur": 35, "q": 18.6 },
+      { "epaisseur": 40, "q": 24.7 },
+      { "epaisseur": 45, "q": 32.7 }
+    ],
+    "180": [
+      { "epaisseur": 0, "q": 2.3 },
+      { "epaisseur": 5, "q": 2.9 },
+      { "epaisseur": 10, "q": 3.8 },
+      { "epaisseur": 15, "q": 5.1 },
+      { "epaisseur": 20, "q": 6.8 },
+      { "epaisseur": 25, "q": 9 },
+      { "epaisseur": 30, "q": 12 },
+      { "epaisseur": 35, "q": 15.8 },
+      { "epaisseur": 40, "q": 21 },
+      { "epaisseur": 45, "q": 27.8 }
+    ],
+    "200": [
+      { "epaisseur": 0, "q": 2 },
+      { "epaisseur": 5, "q": 2.5 },
+      { "epaisseur": 10, "q": 3.3 },
+      { "epaisseur": 15, "q": 4.4 },
+      { "epaisseur": 20, "q": 5.9 },
+      { "epaisseur": 25, "q": 7.8 },
+      { "epaisseur": 30, "q": 10.3 },
+      { "epaisseur": 35, "q": 13.7 },
+      { "epaisseur": 40, "q": 18.1 },
+      { "epaisseur": 45, "q": 24 }
+    ]
+  },
+  "formulas": {
+    "nearestCurve": "Sélection de la courbe kV la plus proche de la valeur saisie",
+    "interpolation": "Interpolation linéaire entre 2 points de la courbe",
+    "timeMinutes": "Tps(min) = (Q * K * N) / mA",
+    "timeSeconds": "t(s) = 60 * (Q * K * N) / mA"
+  }
+}
